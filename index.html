@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="https://i.ibb.co/YvJbjJT/urbango.jpg" />
+    <title>VIAJA YA - Transporte a tu alcance</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+                :root {
+            --primary: #003049;
+            --secondary: #7ED957;
+            --background: #F8F9FA;
+            --text: #212529;
+            --cta: #00BFA6;
+            --error: #FF6B6B;
+            --warning: #FFA726;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .logo {
+            font-weight: bold;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .logo span {
+            color: var(--secondary);
+        }
+        
+        .logo i {
+            color: var(--cta);
+        }
+        
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 1rem;
+            overflow: hidden;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 1.2rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+       
+.passenger-marker i {
+    color: red;
+    font-size: 24px;
+    text-shadow: 0 0 3px white;
+}
+        .tab.active {
+            background: rgba(0, 48, 73, 0.05);
+            border-bottom: 3px solid var(--cta);
+            color: var(--primary);
+        }
+        
+        .tab-content {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            background: var(--background); /* Cambiar a background en lugar de white */
+            border-radius: 0; /* Quitar border-radius */
+            box-shadow: none; /* Quitar box-shadow */
+            overflow-y: auto; /* Permitir scroll vertical */
+            padding: 0; /* Quitar padding */
+            gap: 0; /* Sin gap entre elementos */
+        }
+        
+        .tab-content.active {
+            display: flex;
+        }
+        
+        /* Mapa interactivo */
+        .map-container {
+            height: 200px; /* Reducir altura */
+            position: relative;
+            overflow: hidden;
+            border-radius: 0; /* Quitar border-radius */
+            margin-bottom: 0; /* Quitar margin-bottom */
+            flex-shrink: 0; /* No permitir que se encoja */
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+            border-radius: 12px;
+        }
+        
+        .location-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 0; /* Sin gap */
+            margin-bottom: 0; /* Sin margin */
+            background: white;
+            padding: 20px;
+            border-radius: 0; /* Sin border-radius */
+            box-shadow: none; /* Sin shadow */
+            border-bottom: 1px solid #eee; /* Agregar línea separadora */
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 0; /* Agregar padding vertical */
+        }
+        
+        .input-group i {
+            color: var(--cta);
+            font-size: 1.2rem;
+            min-width: 24px;
+        }
+        
+        .input-group input {
+           flex: 1;
+           padding: 0; /* Quitar padding */
+           border: none;
+           border-bottom: none; /* Quitar border-bottom */
+           font-size: 1rem;
+           outline: none;
+           background: transparent;
+        }
+        
+        .input-group input:focus {
+            border-color: var(--cta);
+        }
+        
+        /* Selección de tipo de viaje */
+        .vehicle-options {
+    display: flex;
+    gap: 10px;
+    padding: 20px;
+    
+    background: white;
+    border-radius: 0; /* Sin border-radius */
+    box-shadow: none; /* Sin shadow */
+    margin-bottom: 0; /* Sin margin */
+    border-bottom: 1px solid #eee; /* Línea separadora */
+}
+        
+        .vehicle-card {
+    min-width: 100px;
+    background: var(--background);
+    border-radius: 10px;
+    padding: 15px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    flex-shrink: 0; /* No permitir que se encoja */
+}
+.vehicle-card h3 {
+    font-size: 0.9rem;
+    margin: 8px 0 5px 0;
+    font-weight: 600;
+}
+        
+        .vehicle-card.selected {
+            border-color: var(--cta);
+            background: rgba(0, 191, 166, 0.1);
+        }
+        
+        .vehicle-card i {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+        
+        .passenger-info {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 5px;
+}
+        
+        /* Lista de conductores */
+        .drivers-container {
+    background: white;
+    border-radius: 0; /* Sin border-radius */
+    box-shadow: none; /* Sin shadow */
+    padding: 20px;
+    margin-bottom: 0; /* Sin margin */
+    max-height: none; /* Sin límite de altura */
+    overflow-y: visible; /* Sin scroll interno */
+    flex: 1; /* Ocupar espacio disponible */
+}
+        
+        .drivers-container h3 {
+    margin-bottom: 15px;
+    color: var(--primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+        
+        .drivers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+        
+        .driver-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: var(--background);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+        
+        .driver-item.selected {
+            border-color: var(--cta);
+            background: rgba(0, 191, 166, 0.1);
+        }
+        
+        .driver-avatar-small {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--cta);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            overflow: hidden;
+        }
+        
+        .driver-avatar-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .driver-details {
+            flex: 1;
+        }
+        
+        .driver-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .driver-car {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .driver-rating {
+            color: #FFC107;
+            font-size: 0.9rem;
+        }
+        
+        .driver-price {
+            min-width: 80px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+        
+        /* Información de viaje */
+        .ride-info {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 15px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .ride-info.active {
+            display: block;
+        }
+        
+        .ride-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .ride-type {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .ride-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--cta);
+        }
+        
+        .ride-distance {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        /* Botones */
+        .actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #eee; /* Línea separadora superior */
+    margin-top: auto; /* Empujar hacia abajo */
+    flex-shrink: 0; /* No permitir que se encoja */
+}
+
+        
+        .cta-button {
+    background: var(--cta);
+    color: white;
+    border: none;
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: none; /* Sin shadow */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+        
+        .cta-button:hover {
+            background: #009e87;
+            transform: translateY(-2px);
+        }
+        
+        .random-driver-btn {
+    background: var(--secondary);
+    color: var(--primary);
+    order: -1; /* Poner primero */
+}
+        
+        .random-driver-btn:hover {
+            background: #6ac04d;
+        }
+        
+        /* Estado de búsqueda */
+        .status-message {
+            padding: 15px;
+            text-align: center;
+            margin-top: 15px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .searching {
+            background: rgba(0, 191, 166, 0.1);
+            color: var(--primary);
+        }
+        
+        .success {
+            background: rgba(126, 217, 87, 0.1);
+            color: var(--primary);
+        }
+        
+        .ride-code {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+            letter-spacing: 3px;
+            color: var(--primary);
+        }
+        
+        /* Iconos para marcadores */
+        .driver-marker {
+            background-color: var(--secondary);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            font-weight: bold;
+            font-size: 14px;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .pickup-marker {
+            background-color: var(--primary);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .destination-marker {
+            background-color: var(--error);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        /* Responsive */
+        @media (min-width: 768px) {
+            .map-container {
+                height: 350px;
+            }
+            
+            .vehicle-options {
+                justify-content: center;
+            }
+            
+            .tabs {
+                flex-wrap: nowrap;
+            }
+        }
+        
+        /* Otras secciones */
+        .driver-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+        }
+        
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .driver-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--cta);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            overflow: hidden;
+        }
+        
+        .driver-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .driver-stats {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            background: white;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .stat-card {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background: var(--background);
+            border-radius: 10px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .requests-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .request-card {
+            background: var(--background);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        
+        .danger-zone {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--warning);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            animation: pulseWarning 2s infinite;
+        }
+        
+        @keyframes pulseWarning {
+            0% { box-shadow: 0 0 0 0 rgba(255, 167, 38, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 167, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 167, 38, 0); }
+        }
+        
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .request-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--cta);
+        }
+        
+        .request-location {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .location-item {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .location-item i {
+            color: var(--cta);
+        }
+        
+        .request-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .distance {
+            background: rgba(0, 48, 73, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .accept-btn {
+            background: var(--secondary);
+            color: var(--primary);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .accept-btn:hover {
+            background: #6ac04d;
+        }
+        
+        /* Sección de comunidad */
+        .community-container {
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .community-post {
+            background: var(--background);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--cta);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            overflow: hidden;
+        }
+        
+        .post-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .post-content {
+            padding: 10px;
+        }
+        
+        .post-tags {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .post-tag {
+            background: rgba(0, 48, 73, 0.1);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        /* Pestaña de pagos */
+        .payment-container {
+            padding: 15px;
+        }
+        
+        .payment-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .payment-card {
+            flex: 1;
+            min-width: 200px;
+            background: var(--background);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .payment-card.selected {
+            border-color: var(--cta);
+            background: rgba(0, 191, 166, 0.1);
+        }
+        
+        .payment-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .payment-price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--cta);
+            margin: 10px 0;
+        }
+        
+        /* Rutas Recientes */
+        .recent-routes-container {
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .route-card {
+            background: var(--background);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .route-info {
+            flex: 1;
+        }
+        
+        .route-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .favorite-btn {
+            background: transparent;
+            border: none;
+            color: #ddd;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .favorite-btn.active {
+            color: #FFC107;
+        }
+        
+        .driver-active {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--secondary);
+        }
+        
+        .pulse {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: var(--secondary);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.9); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(0.9); }
+        }
+        
+        /* Modal de advertencia */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            display: none;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            position: relative;
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-title {
+            color: var(--warning);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .modal-icon {
+            font-size: 3rem;
+            color: var(--warning);
+            margin: 15px 0;
+        }
+        
+        .modal-btn {
+            background: var(--warning);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn:hover {
+            background: #f57c00;
+            transform: translateY(-2px);
+        }
+        
+        /* Nuevas pestañas */
+        .tab-community {
+            display: none;
+        }
+        
+        .tab-payment {
+            display: none;
+        }
+        
+        .tab-recent-routes {
+            display: none;
+        }
+        
+        .tab-community.active {
+            display: block;
+        }
+        
+        .tab-payment.active {
+            display: block;
+        }
+        
+        .tab-recent-routes.active {
+            display: block;
+        }
+            .route-select {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-bottom: 2px solid var(--cta);
+        font-size: 1rem;
+        outline: none;
+        background: transparent;
+        appearance: none;
+        cursor: pointer;
+    }
+    
+    .input-group {
+        position: relative;
+        margin-bottom: 15px;
+    }
+    
+    .input-group i {
+        position: absolute;
+        left: 0;
+        top: 12px;
+        color: var(--cta);
+    }
+    
+    .input-group::after {
+        content: "\f078";
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--cta);
+        pointer-events: none;
+    }
+    
+    #complete-route {
+        padding-left: 30px;
+        width: 100%;
+    }
+    .vehicle-section {
+    margin: 0 15px;
+}
+
+.vehicle-image {
+    width: 60px;
+    height: 40px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.vehicle-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vehicle-section {
+        margin: 10px 0;
+    }
+    
+.vehicle-image {
+        width: 80px;
+        height: 50px;
+     }
+
+</style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-car"></i>
+            <span>URBAN</span>GO !
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="passenger">Pasajero</div>
+            <div class="tab" data-tab="driver">Conductor</div>
+            <div class="tab" data-tab="community">Comunidad</div>
+            <div class="tab" data-tab="payment">Pagos</div>
+            <div class="tab" data-tab="recent-routes">Ruta Más Votadas</div>
+        </div>
+        
+        <!-- Contenido para Pasajero (Fusión de DV2) -->
+        <div class="tab-content active" id="passenger-content">
+            <!-- Mapa interactivo -->
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+            
+            <!-- Campos de origen y destino -->
+            <div class="location-inputs">
+    <div class="input-group">
+        <i class="fas fa-route"></i>
+        <select id="complete-route" class="route-select">
+            <option value="">Selecciona una ruta</option>
+            <option value="tocumen_mañanitas">Tocumen → Mañanitas</option>
+            <option value="Pacora_crrdsur">Pacora → Corredor Sur</option>
+            <option value="Mañanitas_metromall">Mañanitas → Metromall</option>
+            <option value="Mañanitas_mp">Mañanitas → Metro Pedregal</option>
+            <option value="albrook_amador">Albrook → Causeway Amador</option>
+            <option value="sanmiguelito_cincodemayo">San Miguelito → Vía 5 de Mayo</option>
+            <option value="paitilla_multiplaza">Paitilla → Multiplaza Pacific</option>
+            <option value="curundu_albrook">Curundú → Albrook Mall</option>
+            <option value="Costa">Costa del Este → Aeropuerto Tocumen</option>
+            <option value="Pedregal_ITSE">Pedregal → ITSE</option>
+            <option value="5dmy_albrook">5 de Mayo → Albrook</option>
+            <option value="Metromall_eldrido">Metromall → El Dorado</option>
+            <option value="Metrocrrv_metront">Metro Cerro Viento → Metro Nuevo Tocumen</option>
+            <option value="ZonaPG24_znpnmvj">Zona Paga 24 de diciembre → Zona Paga Panamá Viejo</option> 
+        </select>
+    </div>
+</div>
+            
+            <!-- Selección de tipo de viaje -->
+            <div class="vehicle-options">
+                <div class="vehicle-card selected" data-type="ferry">
+                    <i class="fas fa-car"></i>
+                    <h3>Ferri</h3>
+                    <div class="passenger-info">4-8 pasajeros</div>
+                </div>
+                <div class="vehicle-card" data-type="economy">
+                    <i class="fas fa-shuttle-van"></i>
+                    <h3>Piratas</h3>
+                    <div class="passenger-info">1-12 pasajeros</div>
+                </div>
+                <div class="vehicle-card" data-type="comfort">
+                    <i class="fas fa-car-side"></i>
+                    <h3>Confort</h3>
+                    <div class="passenger-info">4 pasajeros</div>
+                </div>
+                <div class="vehicle-card" data-type="premium">
+                    <i class="fas fa-car-alt"></i>
+                    <h3>Premium</h3>
+                    <div class="passenger-info">5 pasajeros</div>
+                </div>
+                <div class="vehicle-card" data-type="van">
+                    <i class="fas fa-bus"></i>
+                    <h3>Metro Bus</h3>
+                    <div class="passenger-info">30-40 pasajeros</div>
+                </div>
+            </div>
+            
+            <!-- Lista de conductores -->
+            <div class="drivers-container">
+                <h3>Conductores disponibles</h3>
+                <div class="drivers-list" id="drivers-list">
+                    <!-- Lista de conductores se llenará dinámicamente -->
+                </div>
+            </div>
+            
+            <!-- Información de viaje seleccionado -->
+            <div class="ride-info" id="ride-info">
+                <div class="ride-details">
+                    <div>
+                        <div class="ride-type" id="ride-type">Ferri</div>
+                        <div id="driver-name">Charlie Cruz</div>
+                    </div>
+                    <div class="ride-price" id="ride-price">$3.20</div>
+                </div>
+                <div class="ride-distance">
+                    <div>
+                        <div>Distancia: <span id="ride-distance">5.2 km</span></div>
+                        <div>Tiempo estimado: <span id="ride-time">15 min</span></div>
+                    </div>
+                    <div id="car-model">Toyota Corolla 2020</div>
+                </div>
+            </div>
+            
+            <!-- Botones de acción -->
+            <div class="actions-container">
+                <button class="cta-button random-driver-btn" id="random-driver-btn">
+                    <i class="fas fa-random"></i> BUSCAR CONDUCTOR ALEATORIO
+                </button>
+                <button class="cta-button" id="request-ride">
+                    <i class="fas fa-check-circle"></i> CONFIRMAR VIAJE
+                </button>
+            </div>
+            
+            <!-- Estado de la búsqueda -->
+            <div class="status-message searching" id="status-message">
+                <i class="fas fa-spinner fa-spin"></i> Buscando conductor disponible...
+            </div>
+        </div>
+        
+        <!-- Contenido para Conductor (de DV1) -->
+        <div class="tab-content" id="driver-content">
+            <div class="driver-header">
+                <div class="driver-info">
+                    <div class="driver-avatar">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Conductor">
+                    </div>
+                    <div>
+                        <h3>Ángel White</h3>
+                        <div class="driver-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            4.7
+                        </div>
+                    </div>
+                </div>
+                <div class="driver-active">
+                    <div class="pulse"></div>
+                    En línea
+                </div>
+            </div>
+            
+            <div class="driver-stats">
+                <div class="stat-card">
+                    <div class="stat-value">14</div>
+                    <div>Viajes hoy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$86</div>
+                    <div>Ganancias</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4.7</div>
+                    <div>Calificación</div>
+                </div>
+            </div>
+            
+            <div class="requests-container">
+                <h3 style="padding: 15px; padding-bottom: 0;">Solicitudes disponibles</h3>
+                
+                <div class="request-card">
+                    <div class="danger-zone">ZONA PELIGROSA</div>
+                    <div class="request-header">
+                        <div>
+                            <h3>Ferri</h3>
+                            <p>5 min de distancia</p>
+                        </div>
+                        <div class="request-price">$1.00</div>
+                    </div>
+                    
+                    <div class="request-location">
+                        <div class="location-item">
+                            <i class="fas fa-circle"></i>
+                            <div>Metro San Miguelito</div>
+                        </div>
+                        <div class="location-item">
+                            <i class="fas fa-flag"></i>
+                            <div>Samaria</div>
+                        </div>
+                    </div>
+                    
+                    <div class="request-footer">
+                        <div class="distance">1.1 km</div>
+                        <button class="accept-btn">Aceptar viaje</button>
+                    </div>
+                </div>
+                
+                <div class="request-card">
+                    <div class="request-header">
+                        <div>
+                            <h3>Confort</h3>
+                            <p>8 min de distancia</p>
+                        </div>
+                        <div class="request-price">$4.00</div>
+                    </div>
+                    
+                    <div class="request-location">
+                        <div class="location-item">
+                            <i class="fas fa-circle"></i>
+                            <div>Paitilla</div>
+                        </div>
+                        <div class="location-item">
+                            <i class="fas fa-flag"></i>
+                            <div>Aeropuerto Internacional de Tocumen</div>
+                        </div>
+                    </div>
+                    
+                    <div class="request-footer">
+                        <div class="distance">3.3 km</div>
+                        <button class="accept-btn">Aceptar viaje</button>
+                    </div>
+                </div>
+                <div class="request-card">
+                    <div class="request-header">
+                        <div>
+                            <h3>Premium</h3>
+                            <p>30 min de distancia</p>
+                        </div>
+                        <div class="request-price">$6.00</div>
+                    </div>
+                    
+                    <div class="request-location">
+                        <div class="location-item">
+                            <i class="fas fa-circle"></i>
+                            <div>Mañanitas</div>
+                        </div>
+                        <div class="location-item">
+                            <i class="fas fa-flag"></i>
+                            <div>Albrook</div>
+                        </div>
+                    </div>
+                    
+                    <div class="request-footer">
+                        <div class="distance">6.3 km</div>
+                        <button class="accept-btn">Aceptar viaje</button>
+                    </div>
+                </div>
+                <div class="request-card">
+                    <div class="danger-zone">ZONA PELIGROSA</div>
+                    <div class="request-header">
+                        <div>
+                            <h3>Premium</h3>
+                            <p>3 min de distancia</p>
+                        </div>
+                        <div class="request-price">$6.00</div>
+                    </div>
+                    
+                    <div class="request-location">
+                        <div class="location-item">
+                            <i class="fas fa-circle"></i>
+                            <div>Metro Pedregal</div>
+                        </div>
+                        <div class="location-item">
+                            <i class="fas fa-flag"></i>
+                            <div>San Joaquín</div>
+                        </div>
+                    </div>
+                    
+                    <div class="request-footer">
+                        <div class="distance">1.1 km</div>
+                        <button class="accept-btn">Aceptar viaje</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenido para Comunidad (de DV1) -->
+        <div class="tab-content tab-community" id="community-content">
+            <div class="community-container">
+                <div class="community-post">
+                    <div class="post-header">
+                        <div class="post-avatar">
+                            <img src="https://randomuser.me/api/portraits/men/14.jpg" alt="Usuario">
+                        </div>
+                        <div>
+                            <h4>Carlos Rodríguez</h4>
+                            <div class="driver-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                5.0
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <p>Me encantaría ver una ruta desde Tocumen hasta Albrook Mall ⭐. Muchas personas que llegan del aeropuerto necesitan ir al centro comercial y actualmente es muy costoso en taxi. Sería una excelente adición a la app.</p>
+                    </div>
+                    <div class="post-tags">
+                        <span class="post-tag">#puntual</span>
+                        <span class="post-tag">#buenServicio</span>
+                    </div>
+                </div>
+                
+                <div class="community-post">
+                    <div class="post-header">
+                        <div class="post-avatar">
+                            <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Usuario">
+                        </div>
+                        <div>
+                            <h4>María López</h4>
+                            <div class="driver-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                4.0
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <p>Sería genial tener una ruta desde San Miguelito hasta la UTP ⭐. Muchos estudiantes necesitamos esta conexión directa y actualmente tenemos que hacer muchos transbordos. ¡Esperamos que la implementen pronto!</p>
+                    </div>
+                    <div class="post-tags">
+                        <span class="post-tag">#rutaSugerida</span>
+                        <span class="post-tag">#UTP</span>
+                    </div>
+                </div>
+                
+                <div class="community-post">
+                    <div class="post-header">
+                        <div class="post-avatar">
+                            <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="Usuario">
+                        </div>
+                        <div>
+                            <h4>Juan Díaz</h4>
+                            <div class="driver-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                                3.0
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <p>Por favor consideren una ruta desde Pedregal hasta Los Pueblos ⭐. Trabajo allá y el transporte público actual es muy malo y esta saturado siempre. </p>
+                    </div>
+                    <div class="post-tags">
+                        <span class="post-tag">#rutaSugerida</span>
+                        <span class="post-tag">#Lospueblos</span>
+                    </div>
+                </div>
+                
+                <div class="community-post">
+                    <div class="post-header">
+                        <div class="post-avatar">
+                            <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Usuario">
+                        </div>
+                        <div>
+                            <h4>Laura Martínez</h4>
+                            <div class="driver-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                4.5
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <p>Necesitamos urgentemente una ruta desde Chorrera hasta Albrook ⭐. Es una conexión que muchas personas necesitamos para trabajo y compras. Actualmente es muy complicado llegar sin carro propio.</p>
+                    </div>
+                    <div class="post-tags">
+                        <span class="post-tag">#rutaSugerida</span>
+                        <span class="post-tag">#Albrook</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenido para Pagos (de DV1) -->
+        <div class="tab-content tab-payment" id="payment-content">
+            <div class="payment-container">
+                <h2 style="text-align: center; margin-bottom: 20px;">Planes de Pago para Conductores</h2>
+                <p style="text-align: center; margin-bottom: 30px;">Selecciona el plan que mejor se adapte a tus necesidades</p>
+                
+                <div class="payment-options">
+                    <div class="payment-card selected" data-plan="daily">
+                        <h3>Plan Diario</h3>
+                        <div class="payment-price">$1.50</div>
+                        <p>Paga solo cuando trabajas</p>
+                        <p>Sin contratos</p>
+                        <p>Acceso completo a la plataforma</p>
+                    </div>
+                    
+                    <div class="payment-card" data-plan="monthly">
+                        <h3>Plan Mensual</h3>
+                        <div class="payment-price">$27.00</div>
+                        <p>Ahorra más del 40%</p>
+                        <p>Acceso ilimitado por 30 días</p>
+                        <p>Prioridad en solicitudes</p>
+                    </div>
+                </div>
+                
+                <button class="cta-button" style="margin-top: 30px;">
+                    <i class="fas fa-credit-card"></i> PAGAR AHORA
+                </button>
+            </div>
+        </div>
+        
+        <!-- Contenido para Rutas Recientes (de DV1) -->
+ <div class="tab-content tab-recent-routes" id="recent-routes-content">
+            <h2 style="margin-bottom: 20px; color: #333; font-size: 24px; text-align: center;">Rutas Más Votadas</h2>
+            <div class="recent-routes-container">
+                <div class="route-card">
+                    <div class="route-info">
+                        <h3>San Miguelito - UTP</h3>
+                        <p>Ruta sugerida por usuarios</p>
+                        <p class="distance">1.5 km - $12.50 (Van)</p>
+                    </div>
+                    <div class="route-actions">
+                        <button class="favorite-btn active"><i class="fas fa-star"></i></button>
+                    </div>
+                </div>
+                
+                <div class="route-card">
+                    <div class="route-info">
+                        <h3>Pedregal - Corredor Norte</h3>
+                        <p>Ruta sugerida por usuarios</p>
+                        <p class="distance">4.2 km - $6.00 (Premium)</p>
+                    </div>
+                    <div class="route-actions">
+                        <button class="favorite-btn active"><i class="fas fa-star"></i></button>
+                    </div>
+                </div>
+                
+                <div class="route-card">
+                    <div class="route-info">
+                        <h3>Chorrera - Multiplaza Pacific</h3>
+                        <p>Ruta sugerida por usuarios</p>
+                        <p class="distance">5.2 km - $12.50 (Van)</p>
+                    </div>
+                    <div class="route-actions">
+                        <button class="favorite-btn active"><i class="fas fa-star"></i></button>
+                    </div>
+                </div>
+                
+                <div class="route-card">
+                    <div class="route-info">
+                        <h3>Tocumen - Albrook Mall</h3>
+                        <p>Ruta sugerida por usuarios</p>
+                        <p class="distance">22.3 km - $6.00 (Premium)</p>
+                    </div>
+                    <div class="route-actions">
+                        <button class="favorite-btn active"><i class="fas fa-star"></i></button>
+                    </div>
+                </div>
+                
+                <div class="route-card">
+                    <div class="route-info">
+                        <h3>Casco Viejo - Amador</h3>
+                        <p>Ruta sugerida por usuarios</p>
+                        <p class="distance">4.1 km - $4.00 (Comfort)</p>
+                    </div>
+                    <div class="route-actions">
+                        <button class="favorite-btn"><i class="far fa-star"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+
+    <script>
+        // Cambiar entre pestañas
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remover clase activa de todas las pestañas
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                // Agregar clase activa a la pestaña seleccionada
+                tab.classList.add('active');
+                
+                // Ocultar todo el contenido
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Mostrar el contenido correspondiente
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-content`).classList.add('active');
+            });
+        });
+        
+        // Selección de tipo de vehículo
+        document.querySelectorAll('.vehicle-card').forEach(card => {
+            card.addEventListener('click', () => {
+                // Remover selección actual
+                document.querySelectorAll('.vehicle-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+                
+                // Seleccionar nueva tarjeta
+                card.classList.add('selected');
+                
+                // Actualizar conductores disponibles
+                updateDriversList();
+            });
+        });
+        
+        // Datos de conductores simulados
+        const driversData = [
+    { 
+        id: 1,
+        name: 'Carlos Mendoza', 
+        car: 'Toyota Corolla 2020', 
+        rating: 4.8, 
+        trips: 124,
+        image: 'https://randomuser.me/api/portraits/men/34.jpg',
+        types: ['ferry', 'economy', 'comfort'],
+        basePrice: 1.00, // Precio base ajustado para ferry (centro del rango)
+        position: [8.9824, -79.5199],
+        route: null
+    },
+    { 
+        id: 2,
+        name: 'María García', 
+        car: 'Honda Civic 2021', 
+        rating: 4.9, 
+        trips: 98,
+        image: 'https://randomuser.me/api/portraits/women/45.jpg',
+        types: ['premium', 'comfort'],
+        basePrice: 6.00, // Precio base para premium (centro del rango $5-$7)
+        position: [8.9750, -79.5150],
+        route: null
+    },
+    { 
+        id: 3,
+        name: 'Pedro Jiménez', 
+        car: 'Metro Bus', // Van
+        rating: 4.7, 
+        trips: 156,
+        image: 'https://randomuser.me/api/portraits/men/12.jpg',
+        types: ['van'],
+        basePrice: 0.25, // Precio base para van (centro del rango $10-$15)
+        position: [8.9900, -79.5300],
+        route: null
+    },
+    { 
+        id: 4,
+        name: 'Ana Rodríguez', 
+        car: 'Hyundai Accent 2022', 
+        rating: 4.6, 
+        trips: 87,
+        image: 'https://randomuser.me/api/portraits/women/32.jpg',
+        types: ['economy', 'ferry'],
+        basePrice: 2.50, // Precio base para economy (centro del rango $2-$3)
+        position: [8.9989, -79.4976],
+        route: null
+    },
+    { 
+        id: 5,
+        name: 'Luis Santos', 
+        car: 'Chevrolet Spark 2020', 
+        rating: 4.9, 
+        trips: 142,
+        image: 'https://randomuser.me/api/portraits/men/22.jpg',
+        types: ['comfort', 'premium'],
+        basePrice: 4.00, // Precio base para comfort (centro del rango $3-$5)
+        position: [8.9970, -79.5400],
+        route: null
+    },
+    { 
+        id: 6,
+        name: 'Charlie Cruz', 
+        car: 'Ford Fusion 2021', 
+        rating: 4.8, 
+        trips: 115,
+        image: 'https://randomuser.me/api/portraits/men/67.jpg',
+        types: ['comfort', 'premium'],
+        basePrice: 4.00, // Precio base para comfort (igual que Luis Santos)
+        position: [8.9924, -79.4990],
+        route: L.polyline([[8.9924, -79.5000], [8.9950, -79.5200]])
+    },
+    { 
+        id: 7,
+        name: 'Frimpong Fernandez',
+        car: 'Metro Bus', // Van
+        rating: 4.2, 
+        trips: 159,
+        image: 'https://randomuser.me/api/portraits/men/65.jpg',
+        types: ['van'],
+        basePrice: 0.25, // Precio base para van (centro del rango $10-$15)
+        position: [8.9900, -79.5300],
+        route: null
+    }
+];
+
+        // Variables globales
+        let map;
+        let selectedDriver = null;
+        let selectedVehicle = 'ferry';
+        let driverMarkers = [];
+        
+        // Inicializar mapa de Panamá
+        function initMap() {
+            map = L.map('map').setView([8.9824, -79.5199], 13); // Panamá City
+
+            // Agregar tiles del mapa
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Crear marcadores para ubicaciones de ejemplo
+            createLocationMarkers();
+            
+            // Agregar marcadores de conductores
+            createDriverMarkers();
+        }
+        
+        // Crear marcadores para ubicaciones
+        function createLocationMarkers() {
+            // Marcador de origen
+            const originMarker = L.marker([8.9824, -79.5199], {
+                icon: L.divIcon({
+                    className: 'pickup-marker',
+                    html: '<i class="fas fa-circle"></i>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                })
+            }).addTo(map).bindPopup('Origen: Av. Principal 123');
+            
+            // Marcador de destino
+            const destinationMarker = L.marker([8.9950, -79.5200], {
+                icon: L.divIcon({
+                    className: 'destination-marker',
+                    html: '<i class="fas fa-flag"></i>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                })
+            }).addTo(map).bindPopup('Tocumen');
+            
+            // Agregar línea de ruta
+            const routeLine = L.polyline([
+                [8.9924, -79.5000],
+                [8.9950, -79.5200]
+            ], {
+                color: '#00BFA6',
+                weight: 4,
+                opacity: 0.8,
+                dashArray: '10, 10'
+            }).addTo(map);
+        }
+        
+        // Crear marcadores para conductores
+        function createDriverMarkers() {
+            // Eliminar marcadores existentes
+            driverMarkers.forEach(marker => map.removeLayer(marker));
+            driverMarkers = [];
+            
+            driversData.forEach(driver => {
+                const marker = L.marker(driver.position, {
+                    icon: L.divIcon({
+                        className: 'driver-marker',
+                        html: '<i class="fas fa-car"></i>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    })
+                }).addTo(map);
+                
+                driverMarkers.push(marker);
+                
+                // Evento para seleccionar conductor desde el mapa
+                marker.on('click', () => {
+                    selectDriver(driver);
+                });
+            });
+        }
+        // 5. FUNCIÓN PARA CORREGIR MARCADOR EN AGUA
+function fixMarkerInWater(marker) {
+    let currentPos = marker.getLatLng();
+    
+    // Coordenadas de ejemplo para mover a tierra
+    let landCoordinates = [
+        [8.9824, -79.5199], // Ciudad de Panamá
+        [8.9833, -79.5167], // Área cercana en tierra
+        [8.9847, -79.5145]  // Otra ubicación en tierra
+    ];
+    
+    // Encontrar la coordenada más cercana en tierra
+    let closestLand = landCoordinates[0];
+    let minDistance = calculateDistance(currentPos, closestLand);
+    
+    landCoordinates.forEach(coord => {
+        let distance = calculateDistance(currentPos, coord);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestLand = coord;
+        }
+    });
+    
+    // Mover a tierra
+    moveMarkerTo(marker, closestLand[0], closestLand[1]);
+}
+
+        // Actualizar lista de conductores
+        function updateDriversList() {
+            const driversListEl = document.getElementById('drivers-list');
+            driversListEl.innerHTML = '';
+            
+            // Obtener tipo de vehículo seleccionado
+            selectedVehicle = document.querySelector('.vehicle-card.selected').getAttribute('data-type');
+            
+            // Filtrar conductores por tipo de vehículo disponible
+            const availableDrivers = driversData.filter(driver => 
+                driver.types.includes(selectedVehicle)
+            );
+            
+            if (availableDrivers.length === 0) {
+                driversListEl.innerHTML = '<p>No hay conductores disponibles para este tipo de vehículo</p>';
+                return;
+            }
+            
+            availableDrivers.forEach(driver => {
+                const driverEl = document.createElement('div');
+                driverEl.className = 'driver-item';
+                if (selectedDriver && selectedDriver.id === driver.id) {
+                    driverEl.classList.add('selected');
+                }
+                let finalPrice;
+        if (selectedVehicle === 'van') {
+            finalPrice = driver.basePrice.toFixed(2);
+        } else {
+            const priceVariation = (Math.random() - 0.5) * 1.5;
+            finalPrice = (driver.basePrice + priceVariation).toFixed(2);
+        }
+            
+                
+                driverEl.innerHTML = `
+                    <div class="driver-avatar-small">
+                        <img src="${driver.image}" alt="Conductor">
+                    </div>
+                    <div class="driver-details">
+                        <div class="driver-name">${driver.name}</div>
+                        <div class="driver-car">${driver.car}</div>
+                        <div class="driver-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            ${driver.rating} (${driver.trips} viajes)
+                        </div>
+                    </div>
+                    <div class="driver-price">$${finalPrice}</div>
+                `;
+                
+                driverEl.addEventListener('click', () => {
+                    selectDriver(driver, finalPrice);
+                });
+                
+                driversListEl.appendChild(driverEl);
+            });
+        }
+        
+        // Seleccionar conductor
+        function selectDriver(driver, price = null) {
+            selectedDriver = driver;
+            
+            // Actualizar lista de conductores
+            updateDriversList();
+            
+            // Mostrar información de viaje
+            const rideInfo = document.getElementById('ride-info');
+            rideInfo.classList.add('active');
+            
+            // Calcular precio si no se proporciona
+            if (!price) {
+    // Rangos de precios por tipo de vehículo
+    const vehiclePricing = {
+        'ferry': {
+            base: 1.00,  // Precio base
+            variation: 0.25,  // Variación permitida (±)
+            min: 0.75,   // Mínimo absoluto
+            max: 1.25    // Máximo absoluto
+        },
+        'economy': {
+            base: 2.50,
+            variation: 0.50,
+            min: 2.00,
+            max: 3.00
+        },
+        'comfort': {
+            base: 4.00,
+            variation: 1.00,
+            min: 3.00,
+            max: 5.00
+        },
+        'premium': {
+            base: 6.00,
+            variation: 1.00,
+            min: 5.00,
+            max: 7.00
+        },
+        'van': {
+            base: 0.25,
+        }
+    };
+
+    const vehicleType = document.querySelector('.vehicle-card.selected').getAttribute('data-type');
+    const pricing = vehiclePricing[vehicleType] || {
+        base: driver.basePrice,
+        variation: 1.50,
+        min: driver.basePrice - 1.50,
+        max: driver.basePrice + 1.50
+    };
+
+    // Generar precio con variación controlada
+    let finalPrice;
+    do {
+        const variation = (Math.random() * 2 - 1) * pricing.variation; // -variation a +variation
+        finalPrice = pricing.base + variation;
+    } while (finalPrice < pricing.min || finalPrice > pricing.max); // Asegurar que esté en rango
+
+    price = finalPrice.toFixed(2);
+}
+            // Actualizar detalles del viaje
+            document.getElementById('ride-type').textContent = 
+                document.querySelector('.vehicle-card.selected h3').textContent;
+            document.getElementById('driver-name').textContent = driver.name;
+            document.getElementById('ride-price').textContent = `$${price}`;
+            document.getElementById('car-model').textContent = driver.car;
+            
+            // Distancia y tiempo aleatorios
+            const distance = (4 + Math.random() * 6).toFixed(1);
+            const time = (10 + Math.random() * 10).toFixed(0);
+            document.getElementById('ride-distance').textContent = `${distance} km`;
+            document.getElementById('ride-time').textContent = `${time} min`;
+        }
+        
+        // Buscar conductor aleatorio
+        document.getElementById('random-driver-btn').addEventListener('click', () => {
+            // Obtener tipo de vehículo seleccionado
+            selectedVehicle = document.querySelector('.vehicle-card.selected').getAttribute('data-type');
+            
+            // Filtrar conductores por tipo de vehículo disponible
+            const availableDrivers = driversData.filter(driver => 
+                driver.types.includes(selectedVehicle)
+            );
+            
+            if (availableDrivers.length === 0) {
+                alert('No hay conductores disponibles para este tipo de vehículo');
+                return;
+            }
+            
+            // Seleccionar conductor aleatorio
+            const randomIndex = Math.floor(Math.random() * availableDrivers.length);
+            const randomDriver = availableDrivers[randomIndex];
+            
+            // Seleccionar al conductor
+            selectDriver(randomDriver);
+            
+            // Desplazar al marcador del conductor
+            map.setView(randomDriver.position, 15);
+        });
+        
+        // Solicitar vehículo
+        document.getElementById('request-ride').addEventListener('click', () => {
+            if (!selectedDriver) {
+                alert('Por favor selecciona un conductor');
+                return;
+            }
+            
+            const button = document.getElementById('request-ride');
+            const status = document.getElementById('status-message');
+            const randomDriverBtn = document.getElementById('random-driver-btn');
+            
+            button.style.display = 'none';
+            randomDriverBtn.style.display = 'none';
+            status.style.display = 'block';
+            
+            // Simular búsqueda de conductor
+            setTimeout(() => {
+                // Generar código de viaje
+                const rideCode = generateRideCode();
+                
+                status.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <h3>¡Viaje confirmado!</h3>
+                    <p>${selectedDriver.name} llegará en 5 minutos</p>
+                    <div class="ride-code">${rideCode}</div>
+                    <p>Muestra este código al conductor</p>
+                `;
+                status.classList.remove('searching');
+                status.classList.add('success');
+                
+                // Simular movimiento del conductor
+                simulateDriverMovement(selectedDriver);
+            }, 2000);
+        });
+        
+        // Generar código de viaje
+        function generateRideCode() {
+            const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 5; i++) {
+                code += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return code;
+        }
+        
+        // Simular movimiento del conductor
+        function simulateDriverMovement(driver) {
+            // Encontrar el marcador del conductor
+            const driverIndex = driversData.findIndex(d => d.id === driver.id);
+            if (driverIndex === -1) return;
+            
+            const driverMarker = driverMarkers[driverIndex];
+            const originPosition = [8.9950, -79.5200];
+            
+            // Calcular pasos de movimiento
+            const steps = 20;
+            let currentStep = 0;
+            
+            const moveInterval = setInterval(() => {
+                if (currentStep >= steps) {
+                    clearInterval(moveInterval);
+                    return;
+                }
+                
+                currentStep++;
+                
+                // Calcular nueva posición
+                const lat = driver.position[0] + 
+                    (originPosition[0] - driver.position[0]) * (currentStep / steps);
+                const lng = driver.position[1] + 
+                    (originPosition[1] - driver.position[1]) * (currentStep / steps);
+                
+                // Actualizar marcador
+                driverMarker.setLatLng([lat, lng]);
+                
+                // Actualizar mapa para centrar en la nueva posición
+                if (currentStep % 5 === 0) {
+                    map.setView([lat, lng], 15);
+                }
+            }, 200);
+        }
+        
+        // Inicializar la aplicación
+        window.onload = function() {
+            initMap();
+            updateDriversList();
+            
+            // Botones para aceptar viaje (modo conductor)
+            document.querySelectorAll('.accept-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const card = this.closest('.request-card');
+                    const route = card.querySelector('.location-item:first-child div').textContent + 
+                                ' - ' + 
+                                card.querySelector('.location-item:last-child div').textContent;
+                    
+                    // Verificar si es una ruta peligrosa
+                    const dangerousRoutes = [
+                        "Metro San Miguelito - Samaria",
+                        "Albrook - Curundu",
+                        "Metro Pedregal - San Joaquín"
+                    ];
+                    
+                    if (dangerousRoutes.includes(route)) {
+                        document.getElementById('danger-route').textContent = route;
+                        document.getElementById('warning-modal').style.display = 'flex';
+                        
+                        // Guardar referencia al botón para continuar después de la advertencia
+                        const confirmBtn = document.getElementById('confirm-ride');
+                        confirmBtn.onclick = () => {
+                            document.getElementById('warning-modal').style.display = 'none';
+                            completeRideAcceptance(this, card);
+                        };
+                    } else {
+                        completeRideAcceptance(this, card);
+                    }
+                });
+            });
+            
+            // Botones de favoritos en rutas recientes
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    this.innerHTML = this.classList.contains('active') ? 
+                        '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+                });
+            });
+            
+            // Selección de plan de pago
+            document.querySelectorAll('.payment-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.payment-card').forEach(c => {
+                        c.classList.remove('selected');
+                    });
+                    card.classList.add('selected');
+                });
+            });
+        };
+        
+        // Función para completar la aceptación del viaje (modo conductor)
+        function completeRideAcceptance(button, card) {
+            const price = card.querySelector('.request-price').textContent;
+            const origin = card.querySelector('.location-item:first-child div').textContent;
+            const passenger = {
+                name: "Ana López",
+                rating: 4.8,
+                trips: 42
+            };
+            
+            button.textContent = 'Viaje aceptado';
+            button.style.background = '#00BFA6';
+            button.style.color = 'white';
+            button.disabled = true;
+            
+            // Simular inicio de viaje
+            setTimeout(() => {
+                const rideCode = generateRideCode();
+                card.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <h3>En camino a recoger al pasajero</h3>
+                        <p>${origin}</p>
+                        <div style="margin: 20px 0;">
+                            <div class="driver-avatar-small" style="margin: 0 auto;">
+                                <img src="https://randomuser.me/api/portraits/women/26.jpg" alt="Pasajero">
+                            </div>
+                            <h4>${passenger.name}</h4>
+                            <p>Viajes: ${passenger.trips} | ⭐ ${passenger.rating}</p>
+                        </div>
+                        <p><strong>Código de viaje:</strong></p>
+                        <div class="ride-code" style="font-size: 1.5rem;">${rideCode}</div>
+                        <div style="display: flex; justify-content: center; margin-top: 20px;">
+                            <div style="background: #003049; color: white; padding: 10px 20px; border-radius: 20px;">
+                                ${price}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
